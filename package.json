@@ -2,7 +2,7 @@
   "name": "okx-dex-skill",
   "version": "1.0.0",
   "description": "OKX DEX trading skill using Node.js",
-  "main": "dex-client.js",
+  "main": "dist/index.js",
   "dependencies": {
     "@solana/web3.js": "^1.87.0",
     "axios": "^1.6.0",
