@@ -45300,7 +45300,8 @@ var require_cjs2 = __commonJS({
 var axios = require_axios();
 var crypto4 = require("crypto");
 var web3 = require_index_cjs();
-var bs58 = require_cjs2();
+var bs58Raw = require_cjs2();
+var bs58 = bs58Raw.default || bs58Raw;
 var OKXDEXClient = class {
   constructor() {
     this.apiKey = process.env.OKX_DEX_API_KEY;
@@ -45337,7 +45338,6 @@ var OKXDEXClient = class {
         "Content-Type": "application/json"
       }
     };
-    if (data) config.data = data;
     try {
       const response = await axios(config);
       return response.data;
@@ -45369,7 +45369,8 @@ var OKXDEXClient = class {
     if (res.code === "0") {
       const txData = res.data[0].tx.data;
       const connection = new web3.Connection(web3.clusterApiUrl("mainnet-beta"), "confirmed");
-      const transaction = web3.VersionedTransaction.deserialize(bs58.decode(txData));
+      const txBuffer = bs58.decode(txData);
+      const transaction = web3.VersionedTransaction.deserialize(txBuffer);
       transaction.sign([keypair]);
       const sig = await connection.sendRawTransaction(transaction.serialize());
       return { success: true, signature: sig };

@@ -45302,7 +45302,8 @@ var require_index = __commonJS({
     var axios = require_axios();
     var crypto4 = require("crypto");
     var web3 = require_index_cjs();
-    var bs58 = require_cjs2();
+    var bs58Raw = require_cjs2();
+    var bs58 = bs58Raw.default || bs58Raw;
     var OKXDEXClient = class {
       constructor() {
         this.apiKey = process.env.OKX_DEX_API_KEY;
@@ -45339,7 +45340,6 @@ var require_index = __commonJS({
             "Content-Type": "application/json"
           }
         };
-        if (data) config.data = data;
         try {
           const response = await axios(config);
           return response.data;
@@ -45358,7 +45358,7 @@ var require_index = __commonJS({
       }
       async executeSwap(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent) {
         if (!this.solanaPrivateKey) throw new Error("SOLANA_PRIVATE_KEY not set");
-        const keypair = web3.Keypair.fromSecretKey(bs58.default.decode(this.solanaPrivateKey));
+        const keypair = web3.Keypair.fromSecretKey(bs58.decode(this.solanaPrivateKey));
         const userAddress = keypair.publicKey.toString();
         const res = await this.request("GET", "/api/v6/dex/aggregator/swap", {
           amount,
@@ -45371,7 +45371,8 @@ var require_index = __commonJS({
         if (res.code === "0") {
           const txData = res.data[0].tx.data;
           const connection = new web3.Connection(web3.clusterApiUrl("mainnet-beta"), "confirmed");
-          const transaction = web3.VersionedTransaction.deserialize(bs58.default.decode(txData));
+          const txBuffer = bs58.decode(txData);
+          const transaction = web3.VersionedTransaction.deserialize(txBuffer);
           transaction.sign([keypair]);
           const sig = await connection.sendRawTransaction(transaction.serialize());
           return { success: true, signature: sig };
