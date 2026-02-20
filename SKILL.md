@@ -18,7 +18,7 @@ Executes a swap on-chain after local signing.
 - `amount`: String. Amount in raw units.
 - `slippage`: String. Optional. Default "0.03".
 
-## Implementation Details for Agents
-- **Execution Entry**: All tools must be executed via the bundled file located at `dist/tools.js`. 
-- **Zero-Dependency**: This skill does NOT require `npm install`. The agent should directly `require('./dist/tools.js')` or execute tasks through the bundled logic.
-- **Environment**: Ensure OKX API keys and `SOLANA_PRIVATE_KEY` are present in the environment for signed transactions. 
+## Implementation Details
+- **Zero-Dependency**: This skill does NOT require `npm install`. It is pre-bundled into a single executable logic.
+- **Agent Entry**: Tools MUST be executed by requiring the standalone bundle at `./dist/tools.js`.
+- **Requirements**: Ensure `OKX_DEX_API_KEY`, `OKX_DEX_SECRET_KEY`, `OKX_DEX_PASSPHRASE`, and `SOLANA_PRIVATE_KEY` are configured in the environment.

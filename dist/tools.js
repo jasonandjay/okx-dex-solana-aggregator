@@ -45302,7 +45302,7 @@ var require_index = __commonJS({
         this.apiKey = process.env.OKX_DEX_API_KEY;
         this.secretKey = process.env.OKX_DEX_SECRET_KEY;
         this.passphrase = process.env.OKX_DEX_PASSPHRASE;
-        this.baseUrl = "https://web3.okx.com";
+        this.baseUrl = "https://www.okx.com";
         this.solanaPrivateKey = process.env.SOLANA_PRIVATE_KEY;
         if (!this.apiKey || !this.secretKey || !this.passphrase) {
           throw new Error("Missing OKX API credentials in environment variables.");
@@ -45324,7 +45324,14 @@ var require_index = __commonJS({
         }
         const timestamp = this.getTimestamp();
         const bodyStr = data ? JSON.stringify(data) : "";
+        
+        console.log('[DEBUG] Method:', method);
+        console.log('[DEBUG] FullPath:', fullPath);
+        console.log('[DEBUG] Timestamp:', timestamp);
+        console.log('[DEBUG] BodyStr:', bodyStr);
         const signature = await this.genSignature(timestamp, method, fullPath, bodyStr);
+        console.log('[DEBUG] Signature:', signature);
+
         const config = {
           method,
           url: this.baseUrl + fullPath,
