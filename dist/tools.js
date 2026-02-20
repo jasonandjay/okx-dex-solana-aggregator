@@ -45302,8 +45302,17 @@ var require_index = __commonJS({
     var axios = require_axios();
     var crypto4 = require("crypto");
     var web3 = require_index_cjs();
-    var bs58Raw = require_cjs2();
-    var bs58 = bs58Raw.default || bs58Raw;
+    var loadBs58 = () => {
+      try {
+        const mod = require_cjs2();
+        if (mod.decode) return mod;
+        if (mod.default && mod.default.decode) return mod.default;
+        return mod;
+      } catch (e) {
+        return null;
+      }
+    };
+    var bs58 = loadBs58();
     var OKXDEXClient = class {
       constructor() {
         this.apiKey = process.env.OKX_DEX_API_KEY;
@@ -45312,72 +45321,50 @@ var require_index = __commonJS({
         this.baseUrl = "https://web3.okx.com";
         this.solanaPrivateKey = process.env.SOLANA_PRIVATE_KEY;
       }
-      getTimestamp() {
-        return (/* @__PURE__ */ new Date()).toISOString();
-      }
       async genSignature(timestamp, method, requestPath, body = "") {
         const message = timestamp + method.toUpperCase() + requestPath + body;
         return crypto4.createHmac("sha256", this.secretKey).update(message).digest("base64");
       }
       async request(method, path, params = null, data = null) {
         let fullPath = path;
-        if (params && Object.keys(params).length > 0) {
-          const sortedKeys = Object.keys(params).sort();
-          const queryString = sortedKeys.map((k) => `${k}=${params[k]}`).join("&");
-          fullPath += `?${queryString}`;
+        if (params) {
+          const keys = Object.keys(params).sort();
+          fullPath += "?" + keys.map((k) => `${k}=${params[k]}`).join("&");
         }
-        const timestamp = this.getTimestamp();
-        const bodyStr = data ? JSON.stringify(data) : "";
-        const signature = await this.genSignature(timestamp, method, fullPath, bodyStr);
-        const config = {
-          method,
-          url: this.baseUrl + fullPath,
-          headers: {
-            "OK-ACCESS-KEY": this.apiKey,
-            "OK-ACCESS-SIGN": signature,
-            "OK-ACCESS-TIMESTAMP": timestamp,
-            "OK-ACCESS-PASSPHRASE": this.passphrase,
-            "Content-Type": "application/json"
-          }
-        };
+        const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+        const signature = await this.genSignature(timestamp, method, fullPath, data ? JSON.stringify(data) : "");
         try {
-          const response = await axios(config);
-          return response.data;
-        } catch (error) {
-          return error.response ? error.response.data : { error: error.message };
+          const res = await axios({
+            url: this.baseUrl + fullPath,
+            method,
+            headers: {
+              "OK-ACCESS-KEY": this.apiKey,
+              "OK-ACCESS-SIGN": signature,
+              "OK-ACCESS-TIMESTAMP": timestamp,
+              "OK-ACCESS-PASSPHRASE": this.passphrase,
+              "Content-Type": "application/json"
+            }
+          });
+          return res.data;
+        } catch (e) {
+          return e.response ? e.response.data : { error: e.message };
         }
       }
       async getQuote(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent = "0.03") {
-        return await this.request("GET", "/api/v6/dex/aggregator/quote", {
-          amount,
-          chainIndex,
-          fromTokenAddress,
-          slippagePercent,
-          toTokenAddress
-        });
+        return await this.request("GET", "/api/v6/dex/aggregator/quote", { amount, chainIndex, fromTokenAddress, slippagePercent, toTokenAddress });
       }
       async executeSwap(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent) {
-        if (!this.solanaPrivateKey) throw new Error("SOLANA_PRIVATE_KEY not set");
+        if (!this.solanaPrivateKey || !bs58) throw new Error("Auth or Module Loader error");
         const keypair = web3.Keypair.fromSecretKey(bs58.decode(this.solanaPrivateKey));
-        const userAddress = keypair.publicKey.toString();
-        const res = await this.request("GET", "/api/v6/dex/aggregator/swap", {
-          amount,
-          chainIndex,
-          fromTokenAddress,
-          slippagePercent,
-          toTokenAddress,
-          userWalletAddress: userAddress
-        });
+        const res = await this.request("GET", "/api/v6/dex/aggregator/swap", { amount, chainIndex, fromTokenAddress, slippagePercent, toTokenAddress, userWalletAddress: keypair.publicKey.toString() });
         if (res.code === "0") {
-          const txData = res.data[0].tx.data;
           const connection = new web3.Connection(web3.clusterApiUrl("mainnet-beta"), "confirmed");
-          const txBuffer = bs58.decode(txData);
-          const transaction = web3.VersionedTransaction.deserialize(txBuffer);
+          const transaction = web3.VersionedTransaction.deserialize(bs58.decode(res.data[0].tx.data));
           transaction.sign([keypair]);
           const sig = await connection.sendRawTransaction(transaction.serialize());
           return { success: true, signature: sig };
         }
-        return { success: false, error: res.msg || "Swap data fetch failed" };
+        return { success: false, error: res.msg || "Swap failed" };
       }
     };
     module2.exports = OKXDEXClient;
