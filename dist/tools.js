@@ -45358,7 +45358,7 @@ var require_index = __commonJS({
       }
       async executeSwap(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent) {
         if (!this.solanaPrivateKey) throw new Error("SOLANA_PRIVATE_KEY not set");
-        const keypair = web3.Keypair.fromSecretKey(bs58.decode(this.solanaPrivateKey));
+        const keypair = web3.Keypair.fromSecretKey(bs58.default.decode(this.solanaPrivateKey));
         const userAddress = keypair.publicKey.toString();
         const res = await this.request("GET", "/api/v6/dex/aggregator/swap", {
           amount,
@@ -45371,7 +45371,7 @@ var require_index = __commonJS({
         if (res.code === "0") {
           const txData = res.data[0].tx.data;
           const connection = new web3.Connection(web3.clusterApiUrl("mainnet-beta"), "confirmed");
-          const transaction = web3.VersionedTransaction.deserialize(bs58.decode(txData));
+          const transaction = web3.VersionedTransaction.deserialize(bs58.default.decode(txData));
           transaction.sign([keypair]);
           const sig = await connection.sendRawTransaction(transaction.serialize());
           return { success: true, signature: sig };
