@@ -17,10 +17,10 @@ Ensure the following variables are set in your environment:
 - `OKX_DEX_PASSPHRASE`: Your OKX API Passphrase
 - `SOLANA_PRIVATE_KEY`: Your Solana Wallet Private Key (Base58 format)
 
-## Features
-- **Quote Engine**: real-time quotes with optimized routing.
-- **Local Signing**: signs Solana `VersionedTransactions` (V0) locally for maximum security.
-- **Automated Execution**: built-in `executeSwap` for one-click trading.
+## Project Structure
+- `index.js`: Core client with OKX API and Solana signing logic.
+- `tools.js`: OpenClaw skill wrapper for seamless agent integration.
+- `package.json`: Dependency definitions.
 
 ## Disclaimer
 This software is for educational purposes only. Use it at your own risk. Trading digital assets involves significant risk.
