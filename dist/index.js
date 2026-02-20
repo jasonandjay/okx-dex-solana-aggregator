@@ -45145,30 +45145,31 @@ Message: ${transactionMessage}.
   }
 });
 
-// node_modules/base-x/src/index.js
-var require_src3 = __commonJS({
-  "node_modules/base-x/src/index.js"(exports2, module2) {
+// node_modules/base-x/src/cjs/index.cjs
+var require_cjs = __commonJS({
+  "node_modules/base-x/src/cjs/index.cjs"(exports2) {
     "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
     function base(ALPHABET) {
       if (ALPHABET.length >= 255) {
         throw new TypeError("Alphabet too long");
       }
-      var BASE_MAP = new Uint8Array(256);
-      for (var j = 0; j < BASE_MAP.length; j++) {
+      const BASE_MAP = new Uint8Array(256);
+      for (let j = 0; j < BASE_MAP.length; j++) {
         BASE_MAP[j] = 255;
       }
-      for (var i = 0; i < ALPHABET.length; i++) {
-        var x = ALPHABET.charAt(i);
-        var xc = x.charCodeAt(0);
+      for (let i = 0; i < ALPHABET.length; i++) {
+        const x = ALPHABET.charAt(i);
+        const xc = x.charCodeAt(0);
         if (BASE_MAP[xc] !== 255) {
           throw new TypeError(x + " is ambiguous");
         }
         BASE_MAP[xc] = i;
       }
-      var BASE = ALPHABET.length;
-      var LEADER = ALPHABET.charAt(0);
-      var FACTOR = Math.log(BASE) / Math.log(256);
-      var iFACTOR = Math.log(256) / Math.log(BASE);
+      const BASE = ALPHABET.length;
+      const LEADER = ALPHABET.charAt(0);
+      const FACTOR = Math.log(BASE) / Math.log(256);
+      const iFACTOR = Math.log(256) / Math.log(BASE);
       function encode(source) {
         if (source instanceof Uint8Array) {
         } else if (ArrayBuffer.isView(source)) {
@@ -45182,20 +45183,20 @@ var require_src3 = __commonJS({
         if (source.length === 0) {
           return "";
         }
-        var zeroes = 0;
-        var length = 0;
-        var pbegin = 0;
-        var pend = source.length;
+        let zeroes = 0;
+        let length = 0;
+        let pbegin = 0;
+        const pend = source.length;
         while (pbegin !== pend && source[pbegin] === 0) {
           pbegin++;
           zeroes++;
         }
-        var size = (pend - pbegin) * iFACTOR + 1 >>> 0;
-        var b58 = new Uint8Array(size);
+        const size = (pend - pbegin) * iFACTOR + 1 >>> 0;
+        const b58 = new Uint8Array(size);
         while (pbegin !== pend) {
-          var carry = source[pbegin];
-          var i2 = 0;
-          for (var it1 = size - 1; (carry !== 0 || i2 < length) && it1 !== -1; it1--, i2++) {
+          let carry = source[pbegin];
+          let i = 0;
+          for (let it1 = size - 1; (carry !== 0 || i < length) && it1 !== -1; it1--, i++) {
             carry += 256 * b58[it1] >>> 0;
             b58[it1] = carry % BASE >>> 0;
             carry = carry / BASE >>> 0;
@@ -45203,14 +45204,14 @@ var require_src3 = __commonJS({
           if (carry !== 0) {
             throw new Error("Non-zero carry");
           }
-          length = i2;
+          length = i;
           pbegin++;
         }
-        var it2 = size - length;
+        let it2 = size - length;
         while (it2 !== size && b58[it2] === 0) {
           it2++;
         }
-        var str = LEADER.repeat(zeroes);
+        let str = LEADER.repeat(zeroes);
         for (; it2 < size; ++it2) {
           str += ALPHABET.charAt(b58[it2]);
         }
@@ -45223,26 +45224,26 @@ var require_src3 = __commonJS({
         if (source.length === 0) {
           return new Uint8Array();
         }
-        var psz = 0;
-        var zeroes = 0;
-        var length = 0;
+        let psz = 0;
+        let zeroes = 0;
+        let length = 0;
         while (source[psz] === LEADER) {
           zeroes++;
           psz++;
         }
-        var size = (source.length - psz) * FACTOR + 1 >>> 0;
-        var b256 = new Uint8Array(size);
-        while (source[psz]) {
-          var charCode = source.charCodeAt(psz);
+        const size = (source.length - psz) * FACTOR + 1 >>> 0;
+        const b256 = new Uint8Array(size);
+        while (psz < source.length) {
+          const charCode = source.charCodeAt(psz);
           if (charCode > 255) {
             return;
           }
-          var carry = BASE_MAP[charCode];
+          let carry = BASE_MAP[charCode];
           if (carry === 255) {
             return;
           }
-          var i2 = 0;
-          for (var it3 = size - 1; (carry !== 0 || i2 < length) && it3 !== -1; it3--, i2++) {
+          let i = 0;
+          for (let it3 = size - 1; (carry !== 0 || i < length) && it3 !== -1; it3--, i++) {
             carry += BASE * b256[it3] >>> 0;
             b256[it3] = carry % 256 >>> 0;
             carry = carry / 256 >>> 0;
@@ -45250,22 +45251,22 @@ var require_src3 = __commonJS({
           if (carry !== 0) {
             throw new Error("Non-zero carry");
           }
-          length = i2;
+          length = i;
           psz++;
         }
-        var it4 = size - length;
+        let it4 = size - length;
         while (it4 !== size && b256[it4] === 0) {
           it4++;
         }
-        var vch = new Uint8Array(zeroes + (size - it4));
-        var j2 = zeroes;
+        const vch = new Uint8Array(zeroes + (size - it4));
+        let j = zeroes;
         while (it4 !== size) {
-          vch[j2++] = b256[it4++];
+          vch[j++] = b256[it4++];
         }
         return vch;
       }
       function decode(string) {
-        var buffer = decodeUnsafe(string);
+        const buffer = decodeUnsafe(string);
         if (buffer) {
           return buffer;
         }
@@ -45277,16 +45278,21 @@ var require_src3 = __commonJS({
         decode
       };
     }
-    module2.exports = base;
+    exports2.default = base;
   }
 });
 
-// node_modules/bs58/index.js
-var require_bs583 = __commonJS({
-  "node_modules/bs58/index.js"(exports2, module2) {
-    var basex = require_src3();
+// node_modules/bs58/src/cjs/index.cjs
+var require_cjs2 = __commonJS({
+  "node_modules/bs58/src/cjs/index.cjs"(exports2) {
+    "use strict";
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
+      return mod && mod.__esModule ? mod : { "default": mod };
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    var base_x_1 = __importDefault(require_cjs());
     var ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-    module2.exports = basex(ALPHABET);
+    exports2.default = (0, base_x_1.default)(ALPHABET);
   }
 });
 
@@ -45294,7 +45300,7 @@ var require_bs583 = __commonJS({
 var axios = require_axios();
 var crypto4 = require("crypto");
 var web3 = require_index_cjs();
-var bs58 = require_bs583();
+var bs58 = require_cjs2();
 var OKXDEXClient = class {
   constructor() {
     this.apiKey = process.env.OKX_DEX_API_KEY;
@@ -45302,22 +45308,19 @@ var OKXDEXClient = class {
     this.passphrase = process.env.OKX_DEX_PASSPHRASE;
     this.baseUrl = "https://web3.okx.com";
     this.solanaPrivateKey = process.env.SOLANA_PRIVATE_KEY;
-    if (!this.apiKey || !this.secretKey || !this.passphrase) {
-      throw new Error("Missing OKX API credentials in environment variables.");
-    }
   }
   getTimestamp() {
     return (/* @__PURE__ */ new Date()).toISOString();
   }
   async genSignature(timestamp, method, requestPath, body = "") {
-    method = method.toUpperCase();
-    const message = timestamp + method + requestPath + body;
+    const message = timestamp + method.toUpperCase() + requestPath + body;
     return crypto4.createHmac("sha256", this.secretKey).update(message).digest("base64");
   }
   async request(method, path, params = null, data = null) {
     let fullPath = path;
     if (params && Object.keys(params).length > 0) {
-      const queryString = Object.keys(params).sort().map((key) => `${key}=${params[key]}`).join("&");
+      const sortedKeys = Object.keys(params).sort();
+      const queryString = sortedKeys.map((k) => `${k}=${params[k]}`).join("&");
       fullPath += `?${queryString}`;
     }
     const timestamp = this.getTimestamp();
@@ -45332,9 +45335,9 @@ var OKXDEXClient = class {
         "OK-ACCESS-TIMESTAMP": timestamp,
         "OK-ACCESS-PASSPHRASE": this.passphrase,
         "Content-Type": "application/json"
-      },
-      data
+      }
     };
+    if (data) config.data = data;
     try {
       const response = await axios(config);
       return response.data;
@@ -45343,8 +45346,7 @@ var OKXDEXClient = class {
     }
   }
   async getQuote(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent = "0.03") {
-    const path = "/api/v6/dex/aggregator/quote";
-    return await this.request("GET", path, {
+    return await this.request("GET", "/api/v6/dex/aggregator/quote", {
       amount,
       chainIndex,
       fromTokenAddress,
@@ -45352,40 +45354,27 @@ var OKXDEXClient = class {
       toTokenAddress
     });
   }
-  async getSwapData(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent, userWalletAddress) {
-    const path = "/api/v6/dex/aggregator/swap";
-    return await this.request("GET", path, {
+  async executeSwap(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent) {
+    if (!this.solanaPrivateKey) throw new Error("SOLANA_PRIVATE_KEY not set");
+    const keypair = web3.Keypair.fromSecretKey(bs58.decode(this.solanaPrivateKey));
+    const userAddress = keypair.publicKey.toString();
+    const res = await this.request("GET", "/api/v6/dex/aggregator/swap", {
       amount,
       chainIndex,
       fromTokenAddress,
       slippagePercent,
       toTokenAddress,
-      userWalletAddress
+      userWalletAddress: userAddress
     });
-  }
-  async executeSwap(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent) {
-    if (!this.solanaPrivateKey) throw new Error("SOLANA_PRIVATE_KEY not set");
-    const secretKeyBytes = bs58.decode(this.solanaPrivateKey);
-    const keypair = web3.Keypair.fromSecretKey(secretKeyBytes);
-    const userAddress = keypair.publicKey.toString();
-    const res = await this.getSwapData(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent, userAddress);
     if (res.code === "0") {
-      const txObj = res.data[0].tx;
-      const txBuffer = bs58.decode(txObj.data);
+      const txData = res.data[0].tx.data;
       const connection = new web3.Connection(web3.clusterApiUrl("mainnet-beta"), "confirmed");
-      let transaction;
-      try {
-        transaction = web3.VersionedTransaction.deserialize(txBuffer);
-        transaction.sign([keypair]);
-      } catch (e) {
-        transaction = web3.Transaction.from(txBuffer);
-        transaction.partialSign(keypair);
-      }
+      const transaction = web3.VersionedTransaction.deserialize(bs58.decode(txData));
+      transaction.sign([keypair]);
       const sig = await connection.sendRawTransaction(transaction.serialize());
       return { success: true, signature: sig };
-    } else {
-      return { success: false, error: res.msg };
     }
+    return { success: false, error: res.msg || "Swap data fetch failed" };
   }
 };
 module.exports = OKXDEXClient;
