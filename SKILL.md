@@ -2,7 +2,10 @@
 
 A high-performance trading skill for Solana.
 
-## Tools
+### `get_hot_tokens`
+Retrieves trending tokens on a specific chain based on trading volume and social signals.
+- `chainIndex`: (Default: '501') Target network index.
+- `size`: Number of tokens to return (max 20).
 
 ### `get_dex_quote`
 Retrieves the best routing and price for a token swap.

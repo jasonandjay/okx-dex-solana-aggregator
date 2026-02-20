@@ -45302,7 +45302,7 @@ var require_index = __commonJS({
         this.apiKey = process.env.OKX_DEX_API_KEY;
         this.secretKey = process.env.OKX_DEX_SECRET_KEY;
         this.passphrase = process.env.OKX_DEX_PASSPHRASE;
-        this.baseUrl = "https://www.okx.com";
+        this.baseUrl = "https://web3.okx.com";
         this.solanaPrivateKey = process.env.SOLANA_PRIVATE_KEY;
         if (!this.apiKey || !this.secretKey || !this.passphrase) {
           throw new Error("Missing OKX API credentials in environment variables.");
@@ -45418,9 +45418,18 @@ async function execute_dex_swap(args) {
   const res = await client.executeSwap("501", from_token, to_token, amount, slippage);
   return res;
 }
+async function get_hot_tokens(args) {
+  const { chainIndex = "501", size = "10" } = args;
+  const res = await client.request("GET", "/api/v6/dex/aggregator/token/ranking", { chainIndex, size });
+  if (res.code === "0") {
+    return { success: true, tokens: res.data };
+  }
+  return { success: false, error: res.msg };
+}
 module.exports = {
   get_dex_quote,
-  execute_dex_swap
+  execute_dex_swap,
+  get_hot_tokens
 };
 /*! Bundled license information:
 

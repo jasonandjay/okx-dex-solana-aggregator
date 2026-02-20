@@ -4,9 +4,12 @@
   "description": "OKX DEX trading skill using Node.js",
   "main": "dex-client.js",
   "dependencies": {
-    "axios": "^1.6.0",
     "@solana/web3.js": "^1.87.0",
+    "axios": "^1.6.0",
     "bs58": "^5.0.0",
     "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.3"
   }
 }

@@ -16,7 +16,7 @@ class OKXDEXClient {
         this.apiKey = process.env.OKX_DEX_API_KEY;
         this.secretKey = process.env.OKX_DEX_SECRET_KEY;
         this.passphrase = process.env.OKX_DEX_PASSPHRASE;
-        this.baseUrl = 'https://www.okx.com';
+        this.baseUrl = 'https://web3.okx.com';
         this.solanaPrivateKey = process.env.SOLANA_PRIVATE_KEY;
 
         if (!this.apiKey || !this.secretKey || !this.passphrase) {

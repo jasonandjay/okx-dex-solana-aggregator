@@ -30,8 +30,19 @@ async function execute_dex_swap(args) {
     return res;
 }
 
+async function get_hot_tokens(args) {
+    const { chainIndex = '501', size = '10' } = args;
+    // Note: Calling the determined ranking endpoint
+    const res = await client.request('GET', '/api/v6/dex/aggregator/token/ranking', { chainIndex, size });
+    if (res.code === '0') {
+        return { success: true, tokens: res.data };
+    }
+    return { success: false, error: res.msg };
+}
+
 // OpenClaw tool map
 module.exports = {
     get_dex_quote,
-    execute_dex_swap
+    execute_dex_swap,
+    get_hot_tokens
 };
