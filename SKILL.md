@@ -1,11 +1,8 @@
 # OKX DEX Aggregator Skill
 
-A high-performance trading skill for Solana.
+A high-performance, zero-dependency trading skill for Solana.
 
-### `get_hot_tokens`
-Retrieves trending tokens on a specific chain based on trading volume and social signals.
-- `chainIndex`: (Default: '501') Target network index.
-- `size`: Number of tokens to return (max 20).
+## Tools
 
 ### `get_dex_quote`
 Retrieves the best routing and price for a token swap.
@@ -21,5 +18,7 @@ Executes a swap on-chain after local signing.
 - `amount`: String. Amount in raw units.
 - `slippage`: String. Optional. Default "0.03".
 
-## Implementation
-The tools are powered by self-contained bundles in the `dist/` directory, requiring no external `npm install` to run within OpenClaw.
+## Implementation Details for Agents
+- **Execution Entry**: All tools must be executed via the bundled file located at `dist/tools.js`. 
+- **Zero-Dependency**: This skill does NOT require `npm install`. The agent should directly `require('./dist/tools.js')` or execute tasks through the bundled logic.
+- **Environment**: Ensure OKX API keys and `SOLANA_PRIVATE_KEY` are present in the environment for signed transactions. 
