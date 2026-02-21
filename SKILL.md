@@ -1,6 +1,6 @@
 # OKX DEX Aggregator Skill
 
-A high-performance, zero-dependency trading skill for Solana.
+A high-performance, zero-dependency trading skill for Solana. Interacts with OKX DEX Aggregator to fetch quotes and execute on-chain swaps.
 
 ## Tools
 
