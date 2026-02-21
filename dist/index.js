@@ -45319,50 +45319,86 @@ var OKXDEXClient = class {
     this.baseUrl = "https://web3.okx.com";
     this.solanaPrivateKey = process.env.SOLANA_PRIVATE_KEY;
   }
+  getTimestamp() {
+    return (/* @__PURE__ */ new Date()).toISOString();
+  }
   async genSignature(timestamp, method, requestPath, body = "") {
     const message = timestamp + method.toUpperCase() + requestPath + body;
     return crypto4.createHmac("sha256", this.secretKey).update(message).digest("base64");
   }
   async request(method, path, params = null, data = null) {
     let fullPath = path;
-    if (params) {
-      const keys = Object.keys(params).sort();
-      fullPath += "?" + keys.map((k) => `${k}=${params[k]}`).join("&");
+    if (params && Object.keys(params).length > 0) {
+      const sortedKeys = Object.keys(params).sort();
+      const queryString = sortedKeys.map((k) => `${k}=${params[k]}`).join("&");
+      fullPath += `?${queryString}`;
     }
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
-    const signature = await this.genSignature(timestamp, method, fullPath, data ? JSON.stringify(data) : "");
+    const timestamp = this.getTimestamp();
+    const bodyStr = data ? JSON.stringify(data) : "";
+    const signature = await this.genSignature(timestamp, method, fullPath, bodyStr);
+    const config = {
+      method,
+      url: this.baseUrl + fullPath,
+      headers: {
+        "OK-ACCESS-KEY": this.apiKey,
+        "OK-ACCESS-SIGN": signature,
+        "OK-ACCESS-TIMESTAMP": timestamp,
+        "OK-ACCESS-PASSPHRASE": this.passphrase,
+        "Content-Type": "application/json"
+      }
+    };
+    if (data) config.data = data;
     try {
-      const res = await axios({
-        url: this.baseUrl + fullPath,
-        method,
-        headers: {
-          "OK-ACCESS-KEY": this.apiKey,
-          "OK-ACCESS-SIGN": signature,
-          "OK-ACCESS-TIMESTAMP": timestamp,
-          "OK-ACCESS-PASSPHRASE": this.passphrase,
-          "Content-Type": "application/json"
-        }
-      });
-      return res.data;
-    } catch (e) {
-      return e.response ? e.response.data : { error: e.message };
+      const response = await axios(config);
+      return response.data;
+    } catch (error) {
+      return error.response ? error.response.data : { error: error.message };
     }
   }
+  // Existing Aggregator Tools
   async getQuote(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent = "0.03") {
-    return await this.request("GET", "/api/v6/dex/aggregator/quote", { amount, chainIndex, fromTokenAddress, slippagePercent, toTokenAddress });
+    return await this.request("GET", "/api/v6/dex/aggregator/quote", {
+      amount,
+      chainIndex,
+      fromTokenAddress,
+      slippagePercent,
+      toTokenAddress
+    });
   }
   async executeSwap(chainIndex, fromTokenAddress, toTokenAddress, amount, slippagePercent) {
     if (!this.solanaPrivateKey || !bs58) throw new Error("Auth or Module Loader error");
     const keypair = web3.Keypair.fromSecretKey(bs58.decode(this.solanaPrivateKey));
-    const res = await this.request("GET", "/api/v6/dex/aggregator/swap", { amount, chainIndex, fromTokenAddress, slippagePercent, toTokenAddress, userWalletAddress: keypair.publicKey.toString() });
+    const userAddress = keypair.publicKey.toString();
+    const res = await this.request("GET", "/api/v6/dex/aggregator/swap", {
+      amount,
+      chainIndex,
+      fromTokenAddress,
+      slippagePercent,
+      toTokenAddress,
+      userWalletAddress: userAddress
+    });
     if (res.code === "0") {
+      const txData = res.data[0].tx.data;
       const connection = new web3.Connection(web3.clusterApiUrl("mainnet-beta"), "confirmed");
-      const transaction = web3.VersionedTransaction.deserialize(bs58.decode(res.data[0].tx.data));
+      const transaction = web3.VersionedTransaction.deserialize(bs58.decode(txData));
       transaction.sign([keypair]);
       const sig = await connection.sendRawTransaction(transaction.serialize());
       return { success: true, signature: sig };
     }
-    return { success: false, error: res.msg || "Swap failed" };
+    return { success: false, error: res.msg || "Swap data fetch failed" };
+  }
+  // New Market Tools
+  async getTokenInfo(chainIndex, tokenAddress) {
+    return await this.request("GET", "/api/v6/dex/market/token-info", {
+      chainIndex,
+      tokenAddress
+    });
+  }
+  async getTokenPrice(chainIndex, tokenAddress) {
+    return await this.request("GET", "/api/v6/dex/market/token-price", {
+      chainIndex,
+      tokenAddress
+    });
   }
 };
 module.exports = OKXDEXClient;
